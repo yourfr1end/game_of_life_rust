@@ -1,0 +1,28 @@
+table {
+    border-collapse: collapse;
+  }
+  
+td {
+  border: 1px solid black;
+  width: 10px;
+  height: 10px;
+}
+
+button {
+    margin: 5px;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.alive {
+  background-color: black;
+}
+
+.dead {
+  background-color: white;
+}
