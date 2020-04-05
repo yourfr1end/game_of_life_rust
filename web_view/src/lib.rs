@@ -9,12 +9,8 @@ use universe_component::UniverseComponent;
 pub struct App {
 }
 
-pub enum Msg {
-    Click,
-}
-
 impl Component for App {
-    type Message = Msg;
+    type Message = ();
     type Properties = ();
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
@@ -23,11 +19,7 @@ impl Component for App {
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
-        match msg {
-            Msg::Click => {
-                true
-            }
-        }
+        true
     }
 
     fn view(&self) -> Html {
