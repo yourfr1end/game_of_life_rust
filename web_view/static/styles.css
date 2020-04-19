@@ -26,3 +26,7 @@ button {
 .dead {
   background-color: white;
 }
+
+.patterns_select {
+  margin: 0 0 10px 0;
+}

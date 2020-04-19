@@ -1,7 +1,7 @@
 #[path="./cell_component.rs"]
 pub mod cell_component;
 
-use yew::{html, Component, ComponentLink, Html, ShouldRender};
+use yew::{html, Component, ComponentLink, Html, ShouldRender, Properties};
 use std::time::Duration;
 use yew::services::{IntervalService, Task};
 use game_of_life_logic::types::*;
@@ -23,14 +23,18 @@ pub enum Msg {
     OnCellClick(usize, usize)
 }
 
+#[derive(PartialEq, Clone, Properties)]
+pub struct Props {
+    pub selected_pattern: Vec<(usize, usize)>,
+}
+
 impl Component for UniverseComponent {
     type Message = Msg;
-    type Properties = ();
+    type Properties = Props;
 
-    fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         let mut universe = Universe::new(50, 50);
-        universe.toggle_cells_state(vec![100,101,102,52,1]);
-        // universe.toggle_cells_state(vec![1,2,3,4,5]);
+        set_pattern(&mut universe, props.selected_pattern);
 
         let callback = link.callback(|_| Msg::Tick);
         let mut interval = IntervalService::new();
@@ -49,39 +53,45 @@ impl Component for UniverseComponent {
             Msg::OnCellClick(row, cell) => {
                 let index = self.universe.width * row + cell;
                 self.universe.toggle_cells_state(vec![index]);
-                return false;
+                false
             },
             Msg::StepClick => {
                 self.next_generation();
-                return true;
+                true
             },
             Msg::StartClick => {
                 self.is_started = true;
-                return true;
+                true
             },
             Msg::StopClick => {
                 self.is_started = false;
-                return true;
+                true
             },
             Msg::ClearUniverse => {
                 self.is_started = false;
                 self.universe.clear_universe();
-                return true;
+                true
             },
             Msg::Tick => {
                 if self.is_started {
                     self.next_generation();
                     return true;
                 }
-                return false;
+
+                false
             }
         }
+    }
+
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        set_pattern(&mut self.universe, props.selected_pattern);
+        
+        true
     }
 
     fn view(&self) -> Html {
         html! {
             <div class="center">
-            // <p>{self.universe.cells.iter().position(|x| *x == Cell::Alive).unwrap().to_string()}</p>
                 <table>
                     {
                         self.universe.cells.chunks(self.universe.width)
@@ -133,6 +143,20 @@ impl UniverseComponent {
 
         if self.universe == previous_generation {
             self.is_started = false;
+        }
+    }
+}
+
+fn set_pattern(universe: &mut Universe, indices: Vec<(usize, usize)>) {
+    match indices.len() {
+        0 => {universe.clear_universe();}
+        _ => {
+            let max_row_index = indices.iter().map(|(row, _)| row).max().unwrap();
+            let max_cell_index = indices.iter().map(|(_, cell)| cell).max().unwrap();
+            let start = (universe.height/2 - max_row_index/2) * universe.width + (universe.width/2 - max_cell_index/2);
+            let set_to_alive = indices.iter().map(|(row, cell)| start + universe.width*row + cell).collect();
+            universe.clear_universe();
+            universe.toggle_cells_state(set_to_alive);
         }
     }
 }
